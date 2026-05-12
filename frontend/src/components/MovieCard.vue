@@ -1,5 +1,15 @@
 <template>
   <div class="card" role="button" tabindex="0">
+    <div class="poster">
+      <img
+        v-if="movie.posterurl"
+        :src="movie.posterurl"
+        :alt="`${movie.primarytitle} poster`"
+        loading="lazy"
+      />
+      <div v-else class="poster-fallback">No poster</div>
+    </div>
+
     <div class="type-badge">{{ movie.titletype || 'title' }}</div>
     <h3>{{ movie.primarytitle }}</h3>
 
@@ -16,6 +26,16 @@
       <span>⭐ {{ movie.averagerating }}</span>
       <span class="votes">({{ formatVotes(movie.numvotes) }})</span>
     </div>
+
+    <a
+      class="imdb-link"
+      :href="movie.imdburl || imdbLink(movie.tconst)"
+      target="_blank"
+      rel="noopener noreferrer"
+      @click.stop
+    >
+      Open on IMDb
+    </a>
   </div>
 </template>
 
@@ -48,6 +68,10 @@ function formatVotes(votes: number | string | null): string {
 
   return `${parsedVotes} votes`
 }
+
+function imdbLink(tconst: string): string {
+  return `https://www.imdb.com/title/${tconst}/`
+}
 </script>
 
 <style scoped>
@@ -58,6 +82,33 @@ function formatVotes(votes: number | string | null): string {
   padding: 1rem;
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #2d2d2d;
+  background: #101010;
+  margin-bottom: 0.8rem;
+}
+
+.poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.poster-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  font-size: 0.85rem;
 }
 
 .card:hover,
@@ -106,5 +157,17 @@ h3 {
 .votes {
   color: #919191;
   margin-left: 0.3rem;
+}
+
+.imdb-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  color: #f5c518;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.imdb-link:hover {
+  text-decoration: underline;
 }
 </style>

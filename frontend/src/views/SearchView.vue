@@ -31,7 +31,7 @@
     <div v-if="results.length" class="pagination">
       <button @click="changePage(-1)" :disabled="page === 1">&larr; Prev</button>
       <span>Page {{ page }}</span>
-      <button @click="changePage(1)">Next &rarr;</button>
+      <button @click="changePage(1)" :disabled="!hasMore || loading">Next &rarr;</button>
     </div>
 
     <p v-if="!loading && searched && !results.length" class="no-results">
@@ -56,6 +56,9 @@ const results = ref<MovieSearchResult[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const searched = ref(false)
+const hasMore = ref(false)
+
+const PAGE_SIZE = 50
 
 function getInitialPage(routePage: unknown): number {
   const parsed = Number(routePage)
@@ -98,6 +101,7 @@ async function search(): Promise<void> {
     results.value = []
     searched.value = false
     error.value = null
+    hasMore.value = false
     return
   }
 
@@ -107,18 +111,23 @@ async function search(): Promise<void> {
 
   try {
     const response = await fetch(
-      `/api/movies/search?q=${encodeURIComponent(trimmedQuery)}&page=${page.value}&limit=20`,
+      `/api/movies/search?q=${encodeURIComponent(trimmedQuery)}&page=${page.value}&limit=${PAGE_SIZE}`,
     )
 
     if (!response.ok) {
       throw new Error('Search request failed')
     }
 
-    const data = (await response.json()) as { results?: MovieSearchResult[] }
+    const data = (await response.json()) as {
+      has_more?: boolean
+      results?: MovieSearchResult[]
+    }
     results.value = Array.isArray(data.results) ? data.results : []
+    hasMore.value = Boolean(data.has_more)
   } catch {
     error.value = 'Something went wrong. Is the backend running?'
     results.value = []
+    hasMore.value = false
   } finally {
     loading.value = false
   }
