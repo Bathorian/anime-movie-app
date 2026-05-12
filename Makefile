@@ -1,4 +1,4 @@
-.PHONY: up down build logs migrate migration shell-db shell-backend backend frontend
+.PHONY: up down build logs migrate shell-db shell-backend backend frontend
 
 up:
 	docker compose up
@@ -13,10 +13,7 @@ logs:
 	docker compose logs -f
 
 migrate:
-	docker compose run --rm backend alembic upgrade head
-
-migration:
-	docker compose run --rm backend alembic revision --autogenerate -m "$(name)"
+	docker compose run --rm backend python -m app.migrations
 
 shell-db:
 	docker compose exec db psql -U user -d imdb
